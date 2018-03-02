@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import _ from 'lodash';
 import firebase from 'firebase';
+import 'firebase/auth';
+import 'firebase/database';
 import { PieChart, Pie } from 'recharts';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 
 
@@ -15,6 +18,53 @@ const DEFAULTS = {
 };
 
 class App extends Component {
+  render() {
+    return (
+      <div>
+        <header>
+          <h1>Page Title</h1>
+        </header>
+        <Router>
+          <Route path='/login' component={LoginPage} />
+          <Route path='/home' component={HomePage} />
+          {/* <Route path='/about' component={AboutPage} /> */}
+        </Router>
+      </div>
+    );
+  }
+}
+
+class LoginPage extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {};
+  }
+
+  componentDidMount() {
+    //hypothetical method to check if user is logged in
+    checkAuthenticationState().then((status) => {
+      if (status === LOGGED_IN) //user is logged in
+        this.setState({ redirect: true }); //re-render, but redirect
+    })
+  }
+
+  render() {
+    if (this.state.redirect) { //if we should redirect
+      return <Redirect to='/home' />;
+    }
+
+    //otherwise, show the form
+    return (
+      <div>
+        <form class="login-form">
+          ...
+        </form>
+      </div>
+    );
+  }
+}
+
+class HomePage extends Component {
 
   constructor(props) {
     super(props);
