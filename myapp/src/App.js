@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
 import _ from 'lodash';
+import firebase from 'firebase';
 import { PieChart, Pie } from 'recharts';
+
+
 
 //skykomish valley
 const DEFAULTS = {
