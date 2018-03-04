@@ -5,7 +5,7 @@ import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
 import { PieChart, Pie } from 'recharts';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
 
 
@@ -21,13 +21,14 @@ class App extends Component {
   render() {
     return (
       <div>
-        <header>
-          <h1>Page Title</h1>
-        </header>
         <Router>
-          <Route path='/login' component={LoginPage} />
-          <Route path='/home' component={HomePage} />
-          {/* <Route path='/about' component={AboutPage} /> */}
+          <div className="container">
+            <Link to="/">Home</Link>
+            {' '}
+            <Link to="/login">Login</Link>
+            <Route exact path="/" component={HomePage} />
+            <Route path="/login" component={LoginPage} />
+          </div>
         </Router>
       </div>
     );
@@ -36,29 +37,137 @@ class App extends Component {
 
 class LoginPage extends Component {
   constructor(props) {
-    super(props)
-    this.state = {};
+    super(props);
+    this.state = {
+      email: '',
+      password: '',
+      username: ''
+    };
   }
-
   componentDidMount() {
-    //hypothetical method to check if user is logged in
-    checkAuthenticationState().then((status) => {
-      if (status === LOGGED_IN) //user is logged in
-        this.setState({ redirect: true }); //re-render, but redirect
+    this.stopWatchingAuth = firebase.auth().onAuthStateChanged(firebaseUser => {
+      if (firebaseUser) {
+        this.setState({
+          user: firebaseUser,
+          errorMessage: '',
+          email: '',
+          password: '',
+          username: ''
+        });
+      }
+      else {
+        this.setState({ user: null }); //null out the saved state
+      }
     })
   }
+  handleSignUp() {
+
+    /* Create a new user and save their information */
+    firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password)
+      .then(firebaseUser => {
+        //include information (for app-level content)
+        let profilePromise = firebaseUser.updateProfile({
+          displayName: this.state.username,
+        }); //return promise for chaining
+
+        return profilePromise;
+      })
+      .then(firebaseUser => {
+        this.setState({
+          user: firebase.auth().currentUser
+        })
+      })
+      .catch((err) => {
+        console.log(err);
+        this.setState({ errorMessage: err.message })
+      })
+  }
+  handleSignIn() {
+    //A callback function for logging in existing users
+
+
+    /* Sign in the user */
+    firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
+      .catch((err) => {
+        console.log(err)
+        this.setState({ errorMessage: err.message })
+      });
+
+  }
+
+  handleSignOut() {
+    this.setState({ errorMessage: null }); //clear old error
+
+    /* Sign out the user, and update the state */
+    firebase.auth().signOut()
+      .then(() => {
+        this.setState({ user: null }); //null out the saved state
+      })
+      .catch((err) => {
+        console.log(err)
+        this.setState({ errorMessage: err.message })
+      })
+  }
+
+  handleChange(event) {
+    let field = event.target.name; //which input
+    let value = event.target.value; //what value
+
+    let changes = {}; //object to hold changes
+    changes[field] = value; //change this field
+    this.setState(changes); //update state
+  }
+
 
   render() {
-    if (this.state.redirect) { //if we should redirect
-      return <Redirect to='/home' />;
-    }
-
-    //otherwise, show the form
     return (
-      <div>
-        <form class="login-form">
-          ...
-        </form>
+      <div className="container">
+        {this.state.errorMessage &&
+          <p className="alert alert-danger">{this.state.errorMessage}</p>
+        }
+
+        {this.state.user &&
+          <div className="alert alert-success"><h1>Logged in as {this.state.user.displayName}</h1></div>
+        }
+
+        <div className="form-group">
+          <label>Email:</label>
+          <input className="form-control"
+            name="email"
+            value={this.state.email}
+            onChange={(event) => { this.handleChange(event) }}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Password:</label>
+          <input type="password" className="form-control"
+            name="password"
+            value={this.state.password}
+            onChange={(event) => { this.handleChange(event) }}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Username:</label>
+          <input className="form-control"
+            name="username"
+            value={this.state.username}
+            onChange={(event) => { this.handleChange(event) }}
+          />
+        </div>
+
+        <div className="form-group">
+          <button className="btn btn-primary mr-2" onClick={() => this.handleSignUp()}>
+            Sign Up
+                 </button>
+          <button className="btn btn-success mr-2" onClick={() => this.handleSignIn()}>
+            Sign In
+                </button>
+          <button className="btn btn-warning mr-2" onClick={() => this.handleSignOut()}>
+            Sign Out
+                </button>
+        </div>
       </div>
     );
   }
