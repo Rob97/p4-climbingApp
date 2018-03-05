@@ -4,7 +4,7 @@ import _ from 'lodash';
 import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
-import { PieChart, Pie } from 'recharts';
+import { PieChart, Pie, Cell } from 'recharts';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 
@@ -306,11 +306,43 @@ class ClimbList extends React.Component {
     });
     combined > 0 && arr.push({ name: 'Mult.', value: combined })
 
+    //Generates random colors (from stackOverflow)
+    function getRandomColor() {
+      let letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+
+      return color;
+    }
+
+    let colorArray = [];
+    for (let i = 0; i < 5; i++) {
+      colorArray[i] = getRandomColor();
+    }
+
     return (
       <div>
         <PieChart width={400} height={250}>
           <Pie startAngle={0} endAngle={-90} dataKey="value" nameKey="name" data={arr} cx={-5} cy={-5}
-            outerRadius={200} innerRadius={180} fill="black" label={(something) => something.name} />
+            outerRadius={200} innerRadius={180} label={(something) => something.name} >
+
+            <Cell key={`cell-${0}`} fill={colorArray[0]} />
+
+
+
+            <Cell key={`cell-${1}`} fill={colorArray[1]} />
+
+            <Cell key={`cell-${2}`} fill={colorArray[2]} />
+
+
+            <Cell key={`cell-${3}`} fill={colorArray[3]} />
+            <Cell key={`cell-${4}`} fill={colorArray[4]} />
+
+
+
+          </Pie>
         </PieChart>
         <div className="head">
           <h2>Routes in the Area</h2>
