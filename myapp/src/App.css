@@ -34,7 +34,7 @@ nav {
   border-radius: 10px;
 }
 
-.head, .card, h1, footer, label{
+.head, .card, h1, footer, label, .about section h2{
   color: white;
   text-shadow: 2px 2px 4px black; 
   font-family: Impact;
@@ -92,11 +92,19 @@ header {
 }
 
 .stickyimg {
-  width: 100%;
+  width: 85%;
+  border-radius: 15px;
+  border: 5px solid #663300;
 }
 
 .about section  {
   color: white;
+  padding: 2rem;
+}
+.about section p {
+  background-color: #663300;
+  padding: .5rem;
+  border-radius: 15px;
 }
 
 .container, .about, body, .welcomecontent{
@@ -114,5 +122,5 @@ header {
 }
 
 .welcomecontent {
-  padding-top: 30vh;
+  padding-top: 5vh;
 }

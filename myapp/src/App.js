@@ -8,31 +8,27 @@ import { PieChart, Pie } from 'recharts';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 
-
-//skykomish valley
-const DEFAULTS = {
-  lat: '47.8207',
-  lon: '-121.5551',
-  numRoutes: 200,
-  maxDist: 10
-};
-
 class App extends Component {
+
+  constructor(props) {
+    super(props);
+  }
+
   render() {
     return (
       <div>
         <header>
-          <h1>Find your Climb!</h1>
+          {/* <h1>Find your Climb!</h1> */}
           <Router>
             <div className="nav">
-              <NavLink activeClassName="active" to="/routes"></NavLink>
-              <NavLink activeClassName="active" activeStyle={{ color: 'black' }} style={{ color: 'white' }} to="/routes">
+              <NavLink activeClassName="active" to="/"><h1>Find your Climb!</h1></NavLink>
+              <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/routes">
                 <div className="pageslabel">Routes</div>
               </NavLink>
-              <NavLink activeClassName="active" activeStyle={{ color: 'black' }} style={{ color: 'white' }} to="/about">
+              <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/about">
                 <div className="pageslabel">Types</div>
               </NavLink>
-              <NavLink activeClassName="active" activeStyle={{ color: 'black' }} style={{ color: 'white' }} to="/login">
+              <NavLink activeClassName="active" activeStyle={{ color: 'black', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/login">
                 <div className="pageslabel">Login</div>
               </NavLink>
               <Route exact path="/" component={WelcomePage} />
@@ -52,8 +48,9 @@ class WelcomePage extends Component {
     return (
       <div className="welcomecontent">
         <h1>
-          Welcome Page
-      </h1>
+          Welcome!
+        </h1>
+        <img className="stickyimg" src={require('./img/homeimg.jpg')} alt="sunset climber"></img>
       </div>
     );
   }
@@ -196,6 +193,14 @@ class LoginPage extends Component {
     );
   }
 }
+
+//skykomish valley
+const DEFAULTS = {
+  lat: '47.8207',
+  lon: '-121.5551',
+  numRoutes: 200,
+  maxDist: 10
+};
 
 class RoutesPage extends Component {
 
@@ -401,39 +406,41 @@ class AboutPage extends Component {
   render() {
     return (
       <div className="about">
-        <img className="stickyimg" src={require('./img/outdoorbouldering.jpg')} alt="outdoor bouldering climbers and a crash pad"></img>
         <section>
-          <h3>Bouldering</h3>
+          <h2>Bouldering</h2>
+          <img className="stickyimg" src={require('./img/outdoorbouldering.jpg')} alt="outdoor bouldering climbers and a crash pad"></img>
           <p>Bouldering is one of the most popular styles of climbing as it requires the least amount of equipment - climbing shoes and chalk. Instead of using ropes for protection,
             bouldering relies on relatively shorter routes(no more than 20 feet tall) and padded mats, known as crash pads, to absorb falls from the ground. These pads are usually
             smaller than indoor crash pads and can be folded for ease of carry on approaches. Bouldering in North America is graded strictly on difficulty through the V-scale.
             The V-scale ranks from V0(easiest) to V16(hardest). Difficulty is highly variable depending on factors such as the spacing between holds and their physical attributes.</p>
         </section>
-        <img className="stickyimg" src={require('./img/outdoortoprope.jpg')} alt="an outdoor top rope climber crack climbing"></img>
         <section>
-          <h3>Top Roping</h3>
+          <h2>Top Roping</h2>
+          <img className="stickyimg" src={require('./img/outdoortoprope.jpg')} alt="an outdoor top rope climber crack climbing"></img>
           <p>Top rope climbs utilize ropes anchored at the top of the route and belayed (reducing fall distance by placing tension on the rope) by a partner at the bottom.
             Due to the fall protection of the rope, top rope routes are generally much taller than bouldering routes. Top roping allows climbers to fall and continue, since
             the top rope allows the climber to hang at or close to the height of the fall. North American top rope routes are graded using the Yosemite Decimal System (YDS).
             YDS ranges from 5.0 to 5.15d, easiest to hardest respectively. Outdoor top rope climbing is generally employed when there are no bolts or rock quality is not adequate enough for
             lead climbing and can employ the use of tree anchors. It is also possible to hike to the top, set the rope, and then hike down for the climb.</p>
         </section>
-        <img className="stickyimg" src={require('./img/outdoorlead.jpg')} alt="an outdoor lead climber climbing"></img>
         <section>
-          <h3>Lead (Sport) Climbing</h3>
+          <h2>Lead (Sport) Climbing</h2>
+          <img className="stickyimg" src={require('./img/outdoorlead.jpg')} alt="an outdoor lead climber climbing"></img>
           <p>Most outdoor climbs are lead climbs, where the lead climber will clip into bolts and then create an anchor on the
               top while being belayed from the ground. Most outdoor lead climbs won't have quick-draws to clip into the bolts,
             so they must be carried with the climber. The difficulty of a Lead climb is graded on the Yosemite Decimal System (5.0 to 5.15d).</p>
         </section>
-        <img className="stickyimg" src={require('./img/cams.jpg')} alt="two people with trad climbing gear"></img>
         <section>
-          <h3>Trad Climbing</h3>
+          <h2>Trad Climbing</h2>
+          <img className="stickyimg" src={require('./img/cams.jpg')} alt="two people with trad climbing gear"></img>
           <p>Trad climbing, short for traditional, employs removable protection that will be placed by the first climber and removed
               by the final climber. These climbs use equipment such as nuts and cams (attached to the harness of the person
               on the right in the image above) that wedge into fissures to provide for anchors. Trad climbing emphasizes exploration,
             as it does not require a predefined route. However, trad climbing, for this reason, can be much more dangerous.
             The difficulty of a Lead climb is graded on the Yosemite Decimal System (5.0 to 5.15d).</p>
-          <h3>Aid Climbing</h3>8
+        </section>
+        <section>
+          <h2>Aid Climbing</h2>
           <img className="stickyimg" src={require('./img/aid.jpg')} alt="an outdoor aid climber using a ladder"></img>
           <p>Aid climbing is performed by attaching devices to routes in order to stand on or aid towards upward climbing. This
               most commonly done on climbs that are to difficult for free climbing. This type of climbing is popular when ascending
