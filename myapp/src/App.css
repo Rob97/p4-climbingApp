@@ -34,7 +34,7 @@ nav {
   border-radius: 10px;
 }
 
-.head, .card, h1, footer {
+.head, .card, h1, footer{
   color: white;
   text-shadow: 2px 2px 4px black; 
   font-family: Impact;
@@ -59,7 +59,6 @@ h1, footer{
   margin: 0;
   padding: 3vh;
   padding-left: 1.5vw;
-  background-color: #663300;
 }
 
 .param {
@@ -88,3 +87,10 @@ h1, footer{
   margin: 0;
 }
 
+header {
+  background-color: #663300;
+}
+
+.stickyimg {
+  width: 100%;
+}

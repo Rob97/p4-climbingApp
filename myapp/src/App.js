@@ -5,8 +5,8 @@ import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
 import { PieChart, Pie } from 'recharts';
-import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
-
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 
 //skykomish valley
@@ -21,15 +21,21 @@ class App extends Component {
   render() {
     return (
       <div>
-        <Router>
-          <div className="container">
-            <Link to="/">Home</Link>
-            {' '}
-            <Link to="/login">Login</Link>
-            <Route exact path="/" component={HomePage} />
-            <Route path="/login" component={LoginPage} />
-          </div>
-        </Router>
+        <header>
+          <h1>Find your Climb!</h1>
+          <Router>
+            <div className="routes">
+              <NavLink activeClassName="active" style={{ color: 'white' }} to="/">Home</NavLink>
+              {' '}
+              <NavLink activeClassName="active" style={{ color: 'white' }} to="/login">Login</NavLink>
+              {' '}
+              <NavLink activeClassName="active" style={{ color: 'white' }} to="/about">About</NavLink>
+              <Route exact path="/" component={HomePage} />
+              <Route path="/login" component={LoginPage} />
+              <Route path="/about" component={AboutPage} />
+            </div>
+          </Router>
+        </header>
       </div>
     );
   }
@@ -202,9 +208,6 @@ class HomePage extends Component {
   render() {
     return (
       < div >
-        <header>
-          <h1>Find your Climb!</h1>
-        </header>
         <main className="container">
           <div className="row">
             <div className="param">
@@ -373,6 +376,54 @@ class ClimbParam extends React.Component {
       </div>
     );
   }
+}
+
+class AboutPage extends Component {
+
+  render() {
+    return (
+      <div className="about">
+        <img className="stickyimg" src={require('./img/outdoorbouldering.jpg')} alt="outdoor bouldering climbers and a crash pad"></img>
+        <section>
+          <h3>Bouldering</h3>
+          <p>Bouldering outdoors is very similar to indoor bouldering, however, portable crash pads are used. These pads are usually
+            smaller and can be folded for ease of carry on approaches.</p>
+        </section>
+        <img className="stickyimg" src={require('./img/outdoortoprope.jpg')} alt="an outdoor top rope climber crack climbing"></img>
+        <section>
+          <h3>Top Roping</h3>
+          <p>Outdoor top rope climbing is generally employed when there are no bolts or rock quality is not adequate enough for
+              lead climbing and can employ the use of tree anchors. It is also possible to hike to the top, set the rope, and
+            then hike down for the climb.</p>
+        </section>
+        <img className="stickyimg" src={require('./img/outdoorlead.jpg')} alt="an outdoor lead climber climbing"></img>
+        <section>
+          <h3>Lead (Sport) Climbing</h3>
+          <p>Most outdoor climbs are lead climbs, where the lead climber will clip into bolts and then create an anchor on the
+              top while being belayed from the ground. Most outdoor lead climbs won't have quick-draws to clip into the bolts,
+            so they must be carried with the climber.</p>
+        </section>
+        <img className="stickyimg" src={require('./img/cams.jpg')} alt="two people with trad climbing gear"></img>
+        <section>
+          <h3>Trad Climbing</h3>
+          <p>Trad climbing, short for traditional, employs removable protection that will be placed by the first climber and removed
+              by the final climber. These climbs use equipment such as nuts and cams (attached to the harness of the person
+              on the right in the image above) that wedge into fissures to provide for anchors. Trad climbing emphasizes exploration,
+            as it does not require a predefined route. However, trad climbing, for this reason, can be much more dangerous.</p>
+          <h3>Aid Climbing</h3>
+          <p>Aid climbing is performed by attaching devices to routes in order to stand on or aid towards upward climbing. This
+              most commonly done on climbs that are to difficult for free climbing. This type of climbing is popular when ascending
+            large walls such as those in Yosemite.</p>
+        </section>
+        <footer>
+          <p>More basic information about the different climbing styles and skills can be found in this
+            <a href="https://www.outsideonline.com/2062326/beginners-guide-rock-climbing">website</a>.
+        </p>
+        </footer>
+      </div>
+    );
+  }
+
 }
 
 export default App;
