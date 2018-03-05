@@ -34,7 +34,7 @@ nav {
   border-radius: 10px;
 }
 
-.head, .card, h1, footer{
+.head, .card, h1, footer, label{
   color: white;
   text-shadow: 2px 2px 4px black; 
   font-family: Impact;
@@ -57,7 +57,7 @@ nav {
 
 h1, footer{
   margin: 0;
-  padding: 3vh;
+  padding: 1.5vh;
   padding-left: 1.5vw;
 }
 
@@ -93,4 +93,26 @@ header {
 
 .stickyimg {
   width: 100%;
+}
+
+.about section  {
+  color: white;
+}
+
+.container, .about, body, .welcomecontent{
+  background-image: url("./img/rock-face.jpg");
+}
+
+.form-group {
+  margin: 1rem;
+}
+
+.pageslabel {
+  display: inline-block;
+  margin: 1rem;
+  margin-top: 0;
+}
+
+.welcomecontent {
+  padding-top: 30vh;
 }
