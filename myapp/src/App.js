@@ -5,14 +5,15 @@ import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
 import { PieChart, Pie, Cell } from 'recharts';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 
+
+//Renders the website
 class App extends Component {
 
   constructor() {
     super();
-    // this.handleData = this.handleData.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
     this.handleUser = this.handleUser.bind(this);
     this.state = {
@@ -20,6 +21,7 @@ class App extends Component {
     };
   }
 
+  //Handles Logout
   handleLogout() {
     this.setState({
       user: ''
@@ -36,6 +38,7 @@ class App extends Component {
     });
   }
 
+  //Renders Header and Nav Links to other parts of the website
   render() {
     return (
       <div>
@@ -88,6 +91,7 @@ class App extends Component {
   }
 }
 
+//Renders the homepage
 class WelcomePage extends Component {
   render() {
     return (
@@ -101,6 +105,7 @@ class WelcomePage extends Component {
   }
 }
 
+//Renders the login page
 class LoginPage extends Component {
   constructor(props) {
     super(props);
@@ -131,6 +136,8 @@ class LoginPage extends Component {
   componentWillUnmount() {
     this.stopWatchingAuth();
   }
+
+  //Function that signs user up and stores their data in firebase
   handleSignUp() {
 
     /* Create a new user and save their information */
@@ -153,6 +160,8 @@ class LoginPage extends Component {
         this.setState({ errorMessage: err.message })
       })
   }
+
+
   handleSignIn() {
     //A callback function for logging in existing users
 
@@ -234,6 +243,7 @@ class LoginPage extends Component {
 }
 
 //skykomish valley
+//Default numbers for when website is first rendered
 const DEFAULTS = {
   lat: '47.8207',
   lon: '-121.5551',
@@ -241,6 +251,7 @@ const DEFAULTS = {
   maxDist: 10
 };
 
+//Renders the page that shows routes
 class RoutesPage extends Component {
 
   constructor(props) {
@@ -248,6 +259,7 @@ class RoutesPage extends Component {
     this.loadData(DEFAULTS.lat, DEFAULTS.lon, DEFAULTS.numRoutes, DEFAULTS.maxDist)
   }
 
+  //Brings the data from the mountain project.com using an api call
   loadData(lat, lon, numRoutes, maxDist) {
     let url = "https://www.mountainproject.com/data/get-routes-for-lat-lon?key=200219054-5692fe76fab0e0f8dbdddb64cba1f33b&lat=" + lat + "&lon=" + lon + "&maxDistance=" + maxDist + "&maxResults=" + numRoutes;
     fetch(url)
@@ -288,6 +300,7 @@ class RoutesPage extends Component {
   }
 }
 
+//The card that shows the data of the rock climbing areas
 class ClimbCard extends React.Component {
   constructor(props) {
     super(props)
@@ -302,16 +315,8 @@ class ClimbCard extends React.Component {
     })
   }
 
-  // componentWillMount() {
-  //   this.firebaseRef = new Firebase("https://ReactFireTodoApp.firebaseio.com/items/");
-  //   this.firebaseRef.on("child_added", function (dataSnapshot) {
-  //     this.items.push(dataSnapshot.val());
-  //     this.setState({
-  //       items: this.items
-  //     });
-  //   }.bind(this));
-  // }
 
+  //Counts the number of likes per location and stores it on firebase
   countLikesToFireBase() {
 
     firebase.database().ref('Post/' + this.props.id + "/Likes").transaction(function (Likes) {
@@ -328,10 +333,8 @@ class ClimbCard extends React.Component {
   }
 
 
-
+  //Saves a location that the user chose on firebase so that it can be viewed on their profile later
   pushLikeToFireBase() {
-    // if (!this.props.uid) {
-
     let UserRef = firebase.database().ref('Users');
     let dataName = this.props.name;
     let foundKey = false;
@@ -369,7 +372,7 @@ class ClimbCard extends React.Component {
 
     foundKey = false;
   }
-  // }
+
 
   componentDidMount() {
     firebase.database().ref('Post/' + this.props.id + "/Likes").on('value', (snapshot) => {
@@ -421,6 +424,7 @@ class ClimbCard extends React.Component {
 }
 
 
+//Generates a list of card climbing routes and the pie chart
 class ClimbList extends React.Component {
   render() {
 
@@ -449,6 +453,7 @@ class ClimbList extends React.Component {
       return color;
     }
 
+
     let colorArray = [];
     for (let i = 0; i < 5; i++) {
       colorArray[i] = getRandomColor();
@@ -461,18 +466,10 @@ class ClimbList extends React.Component {
             outerRadius={200} innerRadius={180} label={(something) => something.name} >
 
             <Cell key={`cell-${0}`} fill={colorArray[0]} />
-
-
-
             <Cell key={`cell-${1}`} fill={colorArray[1]} />
-
             <Cell key={`cell-${2}`} fill={colorArray[2]} />
-
-
             <Cell key={`cell-${3}`} fill={colorArray[3]} />
             <Cell key={`cell-${4}`} fill={colorArray[4]} />
-
-
 
           </Pie>
         </PieChart>
@@ -492,6 +489,8 @@ class ClimbList extends React.Component {
   }
 }
 
+
+// Takes in the user entered parameters and renders the form to submit them in
 class ClimbParam extends React.Component {
   constructor(props) {
     super(props);
@@ -565,6 +564,8 @@ class ClimbParam extends React.Component {
   }
 }
 
+
+//Renders the about page containing information on types of bouldering
 class AboutPage extends Component {
 
   render() {
@@ -621,7 +622,7 @@ class AboutPage extends Component {
 
 }
 
-
+//Redners the profile page which holds the user's saved climbing routes
 class ProfilePage extends Component {
   constructor(props) {
     super(props)
