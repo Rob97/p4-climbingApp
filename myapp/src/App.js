@@ -10,31 +10,70 @@ import { NavLink } from 'react-router-dom';
 
 class App extends Component {
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
+    // this.handleData = this.handleData.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
+    this.handleUser = this.handleUser.bind(this);
+    this.state = {
+      user: ''
+    };
+  }
+
+  handleLogout() {
+    this.setState({
+      user: ''
+    });
+    firebase.auth().signOut()
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  handleUser(data) {
+    console.log(data)
+    this.setState({
+      user: data
+    });
   }
 
   render() {
+    console.log(this.state.email)
     return (
       <div>
         <header>
-          {/* <h1>Find your Climb!</h1> */}
+
           <Router>
             <div className="nav">
               <NavLink activeClassName="active" to="/"><h1>Find your Climb!</h1></NavLink>
+              {this.state.user !== '' &&
+                <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/profile">
+                  <div className="pageslabel">Profile</div>
+                </NavLink>
+              }
+
               <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/routes">
                 <div className="pageslabel">Routes</div>
               </NavLink>
               <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/about">
                 <div className="pageslabel">Types</div>
               </NavLink>
-              <NavLink activeClassName="active" activeStyle={{ color: 'black', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/login">
-                <div className="pageslabel">Login</div>
-              </NavLink>
+              {this.state.user === '' ?
+                <NavLink activeClassName="active" activeStyle={{ color: 'black', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/login">
+                  <div className="pageslabel">Login</div>
+                </NavLink>
+                :
+                <button onClick={this.handleLogout}>Logout</button>
+              }
               <Route exact path="/" component={WelcomePage} />
               <Route path="/routes" component={RoutesPage} />
-              <Route path="/login" component={LoginPage} />
+              <Route path="/login" render={(props) => (
+                <LoginPage {...props} handlerFromParent={this.handleUser} />
+              )} />
               <Route path="/about" component={AboutPage} />
+              <Route path="/profile" render={(props) => (
+                <ProfilePage {...props} />
+              )} />
             </div>
           </Router>
         </header>
@@ -68,6 +107,7 @@ class LoginPage extends Component {
   componentDidMount() {
     this.stopWatchingAuth = firebase.auth().onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
+        this.props.history.push("/routes");
         this.setState({
           user: firebaseUser,
           errorMessage: '',
@@ -75,11 +115,15 @@ class LoginPage extends Component {
           password: '',
           username: ''
         });
+        this.props.handlerFromParent(this.state.user);
       }
       else {
         this.setState({ user: null }); //null out the saved state
       }
     })
+  }
+  componentWillUnmount() {
+    this.stopWatchingAuth();
   }
   handleSignUp() {
 
@@ -106,29 +150,35 @@ class LoginPage extends Component {
   handleSignIn() {
     //A callback function for logging in existing users
 
-
     /* Sign in the user */
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
+      .then(user => {
+        this.setState({
+          user: user
+        })
+        this.props.history.push("/profile");
+        console.clear()
+        console.log(user)
+      })
       .catch((err) => {
-        console.log(err)
+        console.log(err.message)
         this.setState({ errorMessage: err.message })
       });
-
   }
 
-  handleSignOut() {
-    this.setState({ errorMessage: null }); //clear old error
+  // handleSignOut() {
+  //   this.setState({ errorMessage: null }); //clear old error
 
-    /* Sign out the user, and update the state */
-    firebase.auth().signOut()
-      .then(() => {
-        this.setState({ user: null }); //null out the saved state
-      })
-      .catch((err) => {
-        console.log(err)
-        this.setState({ errorMessage: err.message })
-      })
-  }
+  //   /* Sign out the user, and update the state */
+  //   firebase.auth().signOut()
+  //     .then(() => {
+  //       this.setState({ user: null }); //null out the saved state
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //       this.setState({ errorMessage: err.message })
+  //     })
+  // }
 
   handleChange(event) {
     let field = event.target.name; //which input
@@ -185,9 +235,9 @@ class LoginPage extends Component {
           <button className="btn btn-success mr-2" onClick={() => this.handleSignIn()}>
             Sign In
                 </button>
-          <button className="btn btn-warning mr-2" onClick={() => this.handleSignOut()}>
+          {/* <button className="btn btn-warning mr-2" onClick={() => this.handleSignOut()}>
             Sign Out
-                </button>
+                </button> */}
         </div>
       </div>
     );
@@ -489,4 +539,15 @@ class AboutPage extends Component {
 
 }
 
+
+class ProfilePage extends Component {
+
+  render() {
+    return (
+      <div>
+        {/* <p>{this.props.email}</p> */}
+      </div>
+    );
+  }
+}
 export default App;
