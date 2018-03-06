@@ -31,14 +31,12 @@ class App extends Component {
   }
 
   handleUser(data) {
-    console.log(data)
     this.setState({
       user: data
     });
   }
 
   render() {
-    console.log(this.state.email)
     return (
       <div>
         <header>
@@ -63,10 +61,18 @@ class App extends Component {
                   <div className="pageslabel">Login</div>
                 </NavLink>
                 :
-                <button onClick={this.handleLogout}>Logout</button>
+                <button className="btn" onClick={this.handleLogout}>Logout</button>
               }
               <Route exact path="/" component={WelcomePage} />
-              <Route path="/routes" component={RoutesPage} />
+              {this.state.user === '' ?
+                <Route path="/routes" render={(props) => (
+                  <RoutesPage {...props} uid='' />
+                )} />
+                :
+                <Route path="/routes" render={(props) => (
+                  <RoutesPage {...props} uid={this.state.user.uid} />
+                )} />
+              }
               <Route path="/login" render={(props) => (
                 <LoginPage {...props} handlerFromParent={this.handleUser} />
               )} />
@@ -107,7 +113,7 @@ class LoginPage extends Component {
   componentDidMount() {
     this.stopWatchingAuth = firebase.auth().onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
-        this.props.history.push("/routes");
+        //    this.props.history.push("/routes");
         this.setState({
           user: firebaseUser,
           errorMessage: '',
@@ -156,29 +162,12 @@ class LoginPage extends Component {
         this.setState({
           user: user
         })
-        this.props.history.push("/profile");
-        console.clear()
-        console.log(user)
       })
       .catch((err) => {
         console.log(err.message)
         this.setState({ errorMessage: err.message })
       });
   }
-
-  // handleSignOut() {
-  //   this.setState({ errorMessage: null }); //clear old error
-
-  //   /* Sign out the user, and update the state */
-  //   firebase.auth().signOut()
-  //     .then(() => {
-  //       this.setState({ user: null }); //null out the saved state
-  //     })
-  //     .catch((err) => {
-  //       console.log(err)
-  //       this.setState({ errorMessage: err.message })
-  //     })
-  // }
 
   handleChange(event) {
     let field = event.target.name; //which input
@@ -287,7 +276,7 @@ class RoutesPage extends Component {
               <ClimbParam submitForm={(latLongParams) => this.handleSubmit(latLongParams)} />
             </div>
             <div className="list">
-              <ClimbList routes={this.state && this.state.routes ? this.state.routes : []} />
+              <ClimbList uid={this.props.uid} routes={this.state && this.state.routes ? this.state.routes : []} />
             </div>
           </div>
         </main>
@@ -300,10 +289,11 @@ class RoutesPage extends Component {
 }
 
 class ClimbCard extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
-      isHidden: true
+      isHidden: true,
+
     }
   }
   toggleHidden() {
@@ -311,7 +301,61 @@ class ClimbCard extends React.Component {
       isHidden: !this.state.isHidden
     })
   }
+
+  // componentWillMount() {
+  //   this.firebaseRef = new Firebase("https://ReactFireTodoApp.firebaseio.com/items/");
+  //   this.firebaseRef.on("child_added", function (dataSnapshot) {
+  //     this.items.push(dataSnapshot.val());
+  //     this.setState({
+  //       items: this.items
+  //     });
+  //   }.bind(this));
+  // }
+
+  pushLikeToFireBase() {
+    // if (!this.props.uid) {
+    console.log("IM PUSHING");
+    let UserRef = firebase.database().ref('Users');
+    let dataName = this.props.name;
+    let foundKey = false;
+    Object.keys(UserRef).forEach((key) => {
+      if (key === this.props.uid) {
+        foundKey = true;
+        UserRef.child(key).child('Climbs').push({
+          Name: this.props.name,
+          Type: this.props.type,
+          Rating: this.props.rating,
+          Stars: this.props.stars,
+          Pitches: this.props.pitches,
+          Location: this.props.location,
+          Id: this.props.id
+
+        }).catch(err => console.log(err));
+      }
+    }
+    )
+    if (!foundKey) {
+      firebase.database().ref('Users/' + this.props.uid + '/Climbs/' + this.props.id + "/").set(
+        {
+          Name: this.props.name,
+          Type: this.props.type,
+          Rating: this.props.rating,
+          Stars: this.props.stars,
+          Pitches: this.props.pitches,
+          Location: this.props.location,
+          Id: this.props.id
+        }
+      ).catch(err => console.log(err));
+    }
+
+    foundKey = false;
+  }
+  // }
+
+
+
   render() {
+    console.log(this.props.uid)
     let pitches = this.props.pitches;
     if (pitches === '') {
       pitches = "N/A";
@@ -329,8 +373,17 @@ class ClimbCard extends React.Component {
             <p className="card-text">Stars: {this.props.stars}</p>
             <p className="card-text">Pitches: {pitches}</p>
             <p className="card-text">Location: {this.props.location}</p>
+            {this.props.uid === '' &&
+
+              <NavLink activeClassName="active" to="/login"><button className="btn default-btn">Login to Add to your profile! </button> </NavLink>
+            }
+            {this.props.uid !== '' &&
+              <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.pushLikeToFireBase() }}> Add To Profile</button>
+            }
           </div>
+
         }
+
       </div>
     )
   }
@@ -343,11 +396,9 @@ class ClimbList extends React.Component {
     let dict = _(this.props.routes)
       .countBy('type')
       .value()
-
     let arr = [];
     let combined = 0;
     Object.keys(dict).forEach((key) => {
-      console.log(key, dict[key]);
       if (!key.includes(',')) {
         arr.push({ name: key, value: dict[key] })
       } else {
@@ -401,7 +452,7 @@ class ClimbList extends React.Component {
         <div className="card-deck">
           {
             this.props.routes.map((climb) =>
-              <ClimbCard key={climb.id} img={climb.imgSmallMed} name={climb.name} type={climb.type}
+              <ClimbCard uid={this.props.uid} key={climb.id} id={climb.id} img={climb.imgSmallMed} name={climb.name} type={climb.type}
                 rating={climb.rating} stars={climb.stars} pitches={climb.pitches} location={climb.location[2]} />)
           }
         </div>
@@ -455,7 +506,7 @@ class ClimbParam extends React.Component {
               onChange={this.handleChange} />
           </label>
           <br />
-          <input type="submit" value="Submit" />
+          <input className="btn" type="submit" value="Submit" />
         </form>
         <h4>Notable Locations:</h4>
         <div className="locations">

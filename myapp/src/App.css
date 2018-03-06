@@ -147,10 +147,10 @@ button {
 }
 
 button:after {
-  content: '\00bb';
+  /* content: '\00bb'; */
   position: absolute;
   opacity: 0;
   top: 0;
-  right: -20px;
+  /* right: -20px; */
   transition: 0.5s;
 }
