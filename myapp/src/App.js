@@ -10,18 +10,37 @@ import { NavLink } from 'react-router-dom';
 
 class App extends Component {
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
+    this.handleData = this.handleData.bind(this);
+    this.state = {
+      email: '',
+    };
+  }
+
+  handleData(data) {
+    this.setState({
+      email: data
+    });
   }
 
   render() {
     return (
       <div>
         <header>
-          {/* <h1>Find your Climb!</h1> */}
           <Router>
             <div className="nav">
               <NavLink activeClassName="active" to="/"><h1>Find your Climb!</h1></NavLink>
+              {/* {firebase.auth().fetchProvidersForEmail(this.state.email)
+                .then(providers => {
+                  if (providers.length === 0) {
+
+                  } else {
+                    <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/routes">
+                      <div className="pageslabel">Profile</div>
+                    </NavLink>
+                  }
+                })} */}
               <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/routes">
                 <div className="pageslabel">Routes</div>
               </NavLink>
@@ -33,7 +52,10 @@ class App extends Component {
               </NavLink>
               <Route exact path="/" component={WelcomePage} />
               <Route path="/routes" component={RoutesPage} />
-              <Route path="/login" component={LoginPage} />
+
+              <Route path="/login" render={(props) => (
+                <LoginPage {...props} handlerFromParent={this.handleData} />
+              )} />
               <Route path="/about" component={AboutPage} />
             </div>
           </Router>
@@ -68,6 +90,7 @@ class LoginPage extends Component {
   componentDidMount() {
     this.stopWatchingAuth = firebase.auth().onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
+        this.props.handlerFromParent(this.state.email);
         this.setState({
           user: firebaseUser,
           errorMessage: '',
@@ -106,14 +129,12 @@ class LoginPage extends Component {
   handleSignIn() {
     //A callback function for logging in existing users
 
-
     /* Sign in the user */
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
       .catch((err) => {
         console.log(err)
         this.setState({ errorMessage: err.message })
       });
-
   }
 
   handleSignOut() {
