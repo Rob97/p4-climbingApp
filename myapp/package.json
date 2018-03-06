@@ -4,12 +4,17 @@
   "private": true,
   "dependencies": {
     "firebase": "^4.10.1",
+    "gh-pages": "^1.1.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-router-dom": "^4.2.2",
     "react-scripts": "1.1.1",
     "recharts": "^1.0.0-beta.10"
   },
+  "homepage": "https://students.washington.edu/evanzhao/info343/p4-climbingApp/",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
