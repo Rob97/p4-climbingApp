@@ -312,6 +312,21 @@ class ClimbCard extends React.Component {
   //   }.bind(this));
   // }
 
+  countLikesToFireBase() {
+    console.log("IM FUCKIN PUSHING CALM UR TITS");
+    firebase.database().ref('Post/' + this.props.id + "/Likes").transaction(function (Likes) {
+      console.log("likes", Likes);
+      if (Likes) {
+
+        Likes = Likes + 1;
+      } else {
+        Likes = 1;
+      }
+      return Likes;
+    });
+
+  }
+
   pushLikeToFireBase() {
     // if (!this.props.uid) {
     console.log("IM PUSHING");
@@ -379,6 +394,11 @@ class ClimbCard extends React.Component {
             }
             {this.props.uid !== '' &&
               <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.pushLikeToFireBase() }}> Add To Profile</button>
+
+            }
+            {this.props.uid !== '' &&
+              <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.countLikesToFireBase() }}> I LIKED THIS</button>
+
             }
           </div>
 
