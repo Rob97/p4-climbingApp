@@ -271,10 +271,11 @@ class RoutesPage extends Component {
 }
 
 class ClimbCard extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
-      isHidden: true
+      isHidden: true,
+
     }
   }
   toggleHidden() {
@@ -282,6 +283,58 @@ class ClimbCard extends React.Component {
       isHidden: !this.state.isHidden
     })
   }
+  // componentWillMount() {
+  //   this.firebaseRef = new Firebase("https://ReactFireTodoApp.firebaseio.com/items/");
+  //   this.firebaseRef.on("child_added", function (dataSnapshot) {
+  //     this.items.push(dataSnapshot.val());
+  //     this.setState({
+  //       items: this.items
+  //     });
+  //   }.bind(this));
+  // }
+
+  pushLikeToFireBase() {
+    console.log("IM PUSHING");
+    let UserRef = firebase.database().ref('Users');
+    let dataName = this.props.name;
+    Object.keys(UserRef).forEach((key) => {
+
+      if (key === this.state.email) {
+        UserRef.child(key).child('Climbs').push({
+          Name: this.props.name,
+          Type: this.props.type,
+          Rating: this.props.rating,
+          Stars: this.props.stars,
+          Pitches: this.props.pitches,
+          Location: this.props.location
+
+        }).catch(err => console.log(err));
+      } else {
+        firebase.database().ref('Users/' + key).set(
+
+          {
+            'Climbs':
+              {
+                dataName: {
+                  Name: this.props.name,
+                  Type: this.props.type,
+                  Rating: this.props.rating,
+                  Stars: this.props.stars,
+                  Pitches: this.props.pitches,
+                  Location: this.props.location
+                }
+
+              }
+          }
+
+
+        ).catch(err => console.log(err));
+      }
+    })
+  }
+
+
+
   render() {
     let pitches = this.props.pitches;
     if (pitches === '') {
@@ -300,8 +353,11 @@ class ClimbCard extends React.Component {
             <p className="card-text">Stars: {this.props.stars}</p>
             <p className="card-text">Pitches: {pitches}</p>
             <p className="card-text">Location: {this.props.location}</p>
+
           </div>
+
         }
+        {<button onClick={(event) => { event.cancelBubble = true; this.pushLikeToFireBase() }}> I Like</button>}
       </div>
     )
   }
