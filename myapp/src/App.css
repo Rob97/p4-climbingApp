@@ -1,8 +1,3 @@
-footer {
-  bottom: 0;
-  position: fixed;
-}
-
 .App {
   text-align: center;
   top: 0;
@@ -158,4 +153,9 @@ button:after {
   top: 0;
   /* right: -20px; */
   transition: 0.5s;
+}
+
+footer {
+  bottom: 0;
+  position: fixed;
 }

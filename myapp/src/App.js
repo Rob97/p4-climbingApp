@@ -560,6 +560,11 @@ class ClimbParam extends React.Component {
           <p>Lat: 46.9454</p>
           <p>Lon: -119.9873</p>
         </div>
+        <div className="locations">
+          <h5>SmithRock</h5>
+          <p>Lat: 44.3682</p>
+          <p>Lon: -121.1406</p>
+        </div>
       </div>
     );
   }
