@@ -78,7 +78,7 @@ class App extends Component {
               )} />
               <Route path="/about" component={AboutPage} />
               <Route path="/profile" render={(props) => (
-                <ProfilePage {...props} />
+                <ProfilePage {...props} uid={this.state.user.uid} user={this.state.user} />
               )} />
             </div>
           </Router>
@@ -293,7 +293,7 @@ class ClimbCard extends React.Component {
     super(props)
     this.state = {
       isHidden: true,
-
+      likes: ''
     }
   }
   toggleHidden() {
@@ -312,9 +312,26 @@ class ClimbCard extends React.Component {
   //   }.bind(this));
   // }
 
+  countLikesToFireBase() {
+
+    firebase.database().ref('Post/' + this.props.id + "/Likes").transaction(function (Likes) {
+      console.log("likes", Likes);
+      if (Likes) {
+
+        Likes = Likes + 1;
+      } else {
+        Likes = 1;
+      }
+      return Likes;
+    });
+
+  }
+
+
+
   pushLikeToFireBase() {
     // if (!this.props.uid) {
-    console.log("IM PUSHING");
+
     let UserRef = firebase.database().ref('Users');
     let dataName = this.props.name;
     let foundKey = false;
@@ -328,6 +345,7 @@ class ClimbCard extends React.Component {
           Stars: this.props.stars,
           Pitches: this.props.pitches,
           Location: this.props.location,
+          Image: this.props.img,
           Id: this.props.id
 
         }).catch(err => console.log(err));
@@ -343,6 +361,7 @@ class ClimbCard extends React.Component {
           Stars: this.props.stars,
           Pitches: this.props.pitches,
           Location: this.props.location,
+          Image: this.props.img,
           Id: this.props.id
         }
       ).catch(err => console.log(err));
@@ -352,7 +371,13 @@ class ClimbCard extends React.Component {
   }
   // }
 
-
+  componentDidMount() {
+    firebase.database().ref('Post/' + this.props.id + "/Likes").on('value', (snapshot) => {
+      this.setState({
+        likes: snapshot.val()
+      });
+    })
+  }
 
   render() {
     console.log(this.props.uid)
@@ -373,12 +398,18 @@ class ClimbCard extends React.Component {
             <p className="card-text">Stars: {this.props.stars}</p>
             <p className="card-text">Pitches: {pitches}</p>
             <p className="card-text">Location: {this.props.location}</p>
+            <p className="card-text">Likes:  {this.state.likes === '' ? "0" : this.state.likes}</p>
             {this.props.uid === '' &&
 
               <NavLink activeClassName="active" to="/login"><button className="btn default-btn">Login to Add to your profile! </button> </NavLink>
             }
             {this.props.uid !== '' &&
               <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.pushLikeToFireBase() }}> Add To Profile</button>
+
+            }
+            {this.props.uid !== '' &&
+              <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.countLikesToFireBase() }}> I LIKED THIS</button>
+
             }
           </div>
 
@@ -592,12 +623,47 @@ class AboutPage extends Component {
 
 
 class ProfilePage extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      climbs: ''
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.uid !== undefined) {
+      let ref = firebase.database().ref('Users').child(this.props.uid).child('Climbs');
+      ref.on('value', (snapshot) => {
+        this.setState({
+          climbs: snapshot.val()
+        });
+        console.log(this.state.climbs);
+
+        console.log(snapshot.val())
+      })
+
+    }
+  }
 
   render() {
     return (
-      <div>
-        {/* <p>{this.props.email}</p> */}
-      </div>
+
+      < div >
+        <h1> Welcome to your Profile!</h1>
+        <h2> Here are your saved climbs!</h2>
+        <main className="container">
+          <div className="row">
+
+            {this.state.climbs !== null &&
+              Object.keys(this.state.climbs).map((climb) =>
+                // console.log(this.state.climbs[climb]))
+                < ClimbCard uid={this.props.uid} key={this.state.climbs[climb].Id} id={this.state.climbs[climb].Id} img={this.state.climbs[climb].Image} name={this.state.climbs[climb].Name} type={this.state.climbs[climb].Type}
+                  rating={this.state.climbs[climb].Rating} stars={this.state.climbs[climb].Stars} pitches={this.state.climbs[climb].Pitches} location={this.state.climbs[climb].Location} />)
+            }
+
+          </div>
+        </main>
+      </div >
     );
   }
 }
