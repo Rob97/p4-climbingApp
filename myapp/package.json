@@ -2,7 +2,6 @@
   "name": "myapp",
   "version": "0.1.0",
   "private": true,
-  "homepage": "http://students.washington.edu/sseera/info343/p4-climbingApp/",
   "dependencies": {
     "firebase": "^4.10.1",
     "gh-pages": "^1.1.0",
@@ -12,6 +11,7 @@
     "react-scripts": "1.1.1",
     "recharts": "^1.0.0-beta.10"
   },
+  "homepage": "https://students.washington.edu/evanzhao/info343/p4-climbingApp/",
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
