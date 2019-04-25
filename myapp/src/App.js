@@ -5,36 +5,84 @@ import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
 import { PieChart, Pie, Cell } from 'recharts';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 
+
+//Renders the website
 class App extends Component {
 
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
+    this.handleLogout = this.handleLogout.bind(this);
+    this.handleUser = this.handleUser.bind(this);
+    this.state = {
+      user: ''
+    };
   }
 
+  //Handles Logout
+  handleLogout() {
+    this.setState({
+      user: ''
+    });
+    firebase.auth().signOut()
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  handleUser(data) {
+    this.setState({
+      user: data
+    });
+  }
+
+  //Renders Header and Nav Links to other parts of the website
   render() {
     return (
       <div>
         <header>
-          {/* <h1>Find your Climb!</h1> */}
+
           <Router>
             <div className="nav">
               <NavLink activeClassName="active" to="/"><h1>Find your Climb!</h1></NavLink>
+              {this.state.user !== '' &&
+                <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/profile">
+                  <div className="pageslabel">Profile</div>
+                </NavLink>
+              }
+
               <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/routes">
                 <div className="pageslabel">Routes</div>
               </NavLink>
               <NavLink activeClassName="active" activeStyle={{ color: 'grey', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/about">
                 <div className="pageslabel">Types</div>
               </NavLink>
-              <NavLink activeClassName="active" activeStyle={{ color: 'black', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/login">
-                <div className="pageslabel">Login</div>
-              </NavLink>
+              {this.state.user === '' ?
+                <NavLink activeClassName="active" activeStyle={{ color: 'black', borderBottom: '1px solid grey' }} style={{ color: 'white' }} to="/login">
+                  <div className="pageslabel">Login</div>
+                </NavLink>
+                :
+                <button className="btn" onClick={this.handleLogout}>Logout</button>
+              }
               <Route exact path="/" component={WelcomePage} />
-              <Route path="/routes" component={RoutesPage} />
-              <Route path="/login" component={LoginPage} />
+              {this.state.user === '' ?
+                <Route path="/routes" render={(props) => (
+                  <RoutesPage {...props} uid='' />
+                )} />
+                :
+                <Route path="/routes" render={(props) => (
+                  <RoutesPage {...props} uid={this.state.user.uid} />
+                )} />
+              }
+              <Route path="/login" render={(props) => (
+                <LoginPage {...props} handlerFromParent={this.handleUser} />
+              )} />
               <Route path="/about" component={AboutPage} />
+              <Route path="/profile" render={(props) => (
+                <ProfilePage {...props} uid={this.state.user.uid} user={this.state.user} />
+              )} />
             </div>
           </Router>
         </header>
@@ -43,6 +91,7 @@ class App extends Component {
   }
 }
 
+//Renders the homepage
 class WelcomePage extends Component {
   render() {
     return (
@@ -56,6 +105,7 @@ class WelcomePage extends Component {
   }
 }
 
+//Renders the login page
 class LoginPage extends Component {
   constructor(props) {
     super(props);
@@ -68,6 +118,7 @@ class LoginPage extends Component {
   componentDidMount() {
     this.stopWatchingAuth = firebase.auth().onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
+        //    this.props.history.push("/routes");
         this.setState({
           user: firebaseUser,
           errorMessage: '',
@@ -75,12 +126,18 @@ class LoginPage extends Component {
           password: '',
           username: ''
         });
+        this.props.handlerFromParent(this.state.user);
       }
       else {
         this.setState({ user: null }); //null out the saved state
       }
     })
   }
+  componentWillUnmount() {
+    this.stopWatchingAuth();
+  }
+
+  //Function that signs user up and stores their data in firebase
   handleSignUp() {
 
     /* Create a new user and save their information */
@@ -103,31 +160,22 @@ class LoginPage extends Component {
         this.setState({ errorMessage: err.message })
       })
   }
+
+
   handleSignIn() {
     //A callback function for logging in existing users
 
-
     /* Sign in the user */
     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password)
+      .then(user => {
+        this.setState({
+          user: user
+        })
+      })
       .catch((err) => {
-        console.log(err)
+        console.log(err.message)
         this.setState({ errorMessage: err.message })
       });
-
-  }
-
-  handleSignOut() {
-    this.setState({ errorMessage: null }); //clear old error
-
-    /* Sign out the user, and update the state */
-    firebase.auth().signOut()
-      .then(() => {
-        this.setState({ user: null }); //null out the saved state
-      })
-      .catch((err) => {
-        console.log(err)
-        this.setState({ errorMessage: err.message })
-      })
   }
 
   handleChange(event) {
@@ -185,9 +233,9 @@ class LoginPage extends Component {
           <button className="btn btn-success mr-2" onClick={() => this.handleSignIn()}>
             Sign In
                 </button>
-          <button className="btn btn-warning mr-2" onClick={() => this.handleSignOut()}>
+          {/* <button className="btn btn-warning mr-2" onClick={() => this.handleSignOut()}>
             Sign Out
-                </button>
+                </button> */}
         </div>
       </div>
     );
@@ -195,6 +243,7 @@ class LoginPage extends Component {
 }
 
 //skykomish valley
+//Default numbers for when website is first rendered
 const DEFAULTS = {
   lat: '47.8207',
   lon: '-121.5551',
@@ -202,6 +251,7 @@ const DEFAULTS = {
   maxDist: 10
 };
 
+//Renders the page that shows routes
 class RoutesPage extends Component {
 
   constructor(props) {
@@ -209,6 +259,7 @@ class RoutesPage extends Component {
     this.loadData(DEFAULTS.lat, DEFAULTS.lon, DEFAULTS.numRoutes, DEFAULTS.maxDist)
   }
 
+  //Brings the data from the mountain project.com using an api call
   loadData(lat, lon, numRoutes, maxDist) {
     let url = "https://www.mountainproject.com/data/get-routes-for-lat-lon?key=200219054-5692fe76fab0e0f8dbdddb64cba1f33b&lat=" + lat + "&lon=" + lon + "&maxDistance=" + maxDist + "&maxResults=" + numRoutes;
     fetch(url)
@@ -237,7 +288,7 @@ class RoutesPage extends Component {
               <ClimbParam submitForm={(latLongParams) => this.handleSubmit(latLongParams)} />
             </div>
             <div className="list">
-              <ClimbList routes={this.state && this.state.routes ? this.state.routes : []} />
+              <ClimbList uid={this.props.uid} routes={this.state && this.state.routes ? this.state.routes : []} />
             </div>
           </div>
         </main>
@@ -249,11 +300,13 @@ class RoutesPage extends Component {
   }
 }
 
+//The card that shows the data of the rock climbing areas
 class ClimbCard extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
-      isHidden: true
+      isHidden: true,
+      likes: ''
     }
   }
   toggleHidden() {
@@ -261,7 +314,76 @@ class ClimbCard extends React.Component {
       isHidden: !this.state.isHidden
     })
   }
+
+
+  //Counts the number of likes per location and stores it on firebase
+  countLikesToFireBase() {
+
+    firebase.database().ref('Post/' + this.props.id + "/Likes").transaction(function (Likes) {
+      console.log("likes", Likes);
+      if (Likes) {
+
+        Likes = Likes + 1;
+      } else {
+        Likes = 1;
+      }
+      return Likes;
+    });
+
+  }
+
+
+  //Saves a location that the user chose on firebase so that it can be viewed on their profile later
+  pushLikeToFireBase() {
+    let UserRef = firebase.database().ref('Users');
+    let dataName = this.props.name;
+    let foundKey = false;
+    Object.keys(UserRef).forEach((key) => {
+      if (key === this.props.uid) {
+        foundKey = true;
+        UserRef.child(key).child('Climbs').push({
+          Name: this.props.name,
+          Type: this.props.type,
+          Rating: this.props.rating,
+          Stars: this.props.stars,
+          Pitches: this.props.pitches,
+          Location: this.props.location,
+          Image: this.props.img,
+          Id: this.props.id
+
+        }).catch(err => console.log(err));
+      }
+    }
+    )
+    if (!foundKey) {
+      firebase.database().ref('Users/' + this.props.uid + '/Climbs/' + this.props.id + "/").set(
+        {
+          Name: this.props.name,
+          Type: this.props.type,
+          Rating: this.props.rating,
+          Stars: this.props.stars,
+          Pitches: this.props.pitches,
+          Location: this.props.location,
+          Image: this.props.img,
+          Id: this.props.id
+        }
+      ).catch(err => console.log(err));
+    }
+
+    foundKey = false;
+  }
+
+
+  componentDidMount() {
+    firebase.database().ref('Post/' + this.props.id + "/Likes").on('value', (snapshot) => {
+      this.setState({
+        likes: snapshot.val()
+      });
+    })
+  }
+
   render() {
+    console.log(this.props.uid)
     let pitches = this.props.pitches;
     if (pitches === '') {
       pitches = "N/A";
@@ -279,25 +401,39 @@ class ClimbCard extends React.Component {
             <p className="card-text">Stars: {this.props.stars}</p>
             <p className="card-text">Pitches: {pitches}</p>
             <p className="card-text">Location: {this.props.location}</p>
+            <p className="card-text">Likes:  {this.state.likes === '' ? "0" : this.state.likes}</p>
+            {this.props.uid === '' &&
+
+              <NavLink activeClassName="active" to="/login"><button className="btn default-btn">Login to Add to your profile! </button> </NavLink>
+            }
+            {this.props.uid !== '' &&
+              <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.pushLikeToFireBase() }}> Add To Profile</button>
+
+            }
+            {this.props.uid !== '' &&
+              <button className="btn default-btn" onClick={(event) => { event.cancelBubble = true; this.countLikesToFireBase() }}> I LIKED THIS</button>
+
+            }
           </div>
+
         }
+
       </div>
     )
   }
 }
 
 
+//Generates a list of card climbing routes and the pie chart
 class ClimbList extends React.Component {
   render() {
 
     let dict = _(this.props.routes)
       .countBy('type')
       .value()
-
     let arr = [];
     let combined = 0;
     Object.keys(dict).forEach((key) => {
-      console.log(key, dict[key]);
       if (!key.includes(',')) {
         arr.push({ name: key, value: dict[key] })
       } else {
@@ -317,6 +453,7 @@ class ClimbList extends React.Component {
       return color;
     }
 
+
     let colorArray = [];
     for (let i = 0; i < 5; i++) {
       colorArray[i] = getRandomColor();
@@ -329,18 +466,10 @@ class ClimbList extends React.Component {
             outerRadius={200} innerRadius={180} label={(something) => something.name} >
 
             <Cell key={`cell-${0}`} fill={colorArray[0]} />
-
-
-
             <Cell key={`cell-${1}`} fill={colorArray[1]} />
-
             <Cell key={`cell-${2}`} fill={colorArray[2]} />
-
-
             <Cell key={`cell-${3}`} fill={colorArray[3]} />
             <Cell key={`cell-${4}`} fill={colorArray[4]} />
-
-
 
           </Pie>
         </PieChart>
@@ -351,7 +480,7 @@ class ClimbList extends React.Component {
         <div className="card-deck">
           {
             this.props.routes.map((climb) =>
-              <ClimbCard key={climb.id} img={climb.imgSmallMed} name={climb.name} type={climb.type}
+              <ClimbCard uid={this.props.uid} key={climb.id} id={climb.id} img={climb.imgSmallMed} name={climb.name} type={climb.type}
                 rating={climb.rating} stars={climb.stars} pitches={climb.pitches} location={climb.location[2]} />)
           }
         </div>
@@ -360,6 +489,8 @@ class ClimbList extends React.Component {
   }
 }
 
+
+// Takes in the user entered parameters and renders the form to submit them in
 class ClimbParam extends React.Component {
   constructor(props) {
     super(props);
@@ -405,7 +536,7 @@ class ClimbParam extends React.Component {
               onChange={this.handleChange} />
           </label>
           <br />
-          <input type="submit" value="Submit" />
+          <input className="btn" type="submit" value="Submit" />
         </form>
         <h4>Notable Locations:</h4>
         <div className="locations">
@@ -428,11 +559,18 @@ class ClimbParam extends React.Component {
           <p>Lat: 46.9454</p>
           <p>Lon: -119.9873</p>
         </div>
+        <div className="locations">
+          <h5>SmithRock</h5>
+          <p>Lat: 44.3682</p>
+          <p>Lon: -121.1406</p>
+        </div>
       </div>
     );
   }
 }
 
+
+//Renders the about page containing information on types of bouldering
 class AboutPage extends Component {
 
   render() {
@@ -489,4 +627,50 @@ class AboutPage extends Component {
 
 }
 
+//Redners the profile page which holds the user's saved climbing routes
+class ProfilePage extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      climbs: ''
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.uid !== undefined) {
+      let ref = firebase.database().ref('Users').child(this.props.uid).child('Climbs');
+      ref.on('value', (snapshot) => {
+        this.setState({
+          climbs: snapshot.val()
+        });
+        console.log(this.state.climbs);
+
+        console.log(snapshot.val())
+      })
+
+    }
+  }
+
+  render() {
+    return (
+
+      < div >
+        <h1> Welcome to your Profile!</h1>
+        <h2> Here are your saved climbs!</h2>
+        <main className="container">
+          <div className="row">
+
+            {this.state.climbs !== null &&
+              Object.keys(this.state.climbs).map((climb) =>
+                // console.log(this.state.climbs[climb]))
+                < ClimbCard uid={this.props.uid} key={this.state.climbs[climb].Id} id={this.state.climbs[climb].Id} img={this.state.climbs[climb].Image} name={this.state.climbs[climb].Name} type={this.state.climbs[climb].Type}
+                  rating={this.state.climbs[climb].Rating} stars={this.state.climbs[climb].Stars} pitches={this.state.climbs[climb].Pitches} location={this.state.climbs[climb].Location} />)
+            }
+
+          </div>
+        </main>
+      </div >
+    );
+  }
+}
 export default App;
